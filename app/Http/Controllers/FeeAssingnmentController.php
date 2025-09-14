@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-use App\Models\Payment;
+use App\Models\FeeAssignment;
 
-class PaymentController extends Controller
+class FeeAssingnmentController extends Controller
 {
     /**
      * Display a listing of the resource.
