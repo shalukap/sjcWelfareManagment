@@ -7,26 +7,25 @@ import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
 import { BookOpen, Folder, LayoutGrid,UsersRound,Coins,DollarSign } from 'lucide-react';
 import AppLogo from './app-logo';
+import { route } from 'ziggy-js';
 
 const mainNavItems: NavItem[] = [
     {
         title: 'Dashboard',
-        href: dashboard(),
-        icon: LayoutGrid,
+        href: '/dashboard',
     },
     {
         title: 'Students',
-        href: dashboard(),
-        icon: UsersRound,
+        href: '/students',
     },
     {
         title: 'Payments',
-        href: dashboard(),
+        href: '/payments',
         icon: Coins,
     },
     {
         title: 'Assign fees',
-        href: dashboard(),
+        href: '/fees/assign',
         icon: DollarSign,
     },
 ];
@@ -63,7 +62,7 @@ export function AppSidebar() {
             <SidebarContent>
                 <NavMain items={mainNavItems} />
             </SidebarContent>
-            
+
             <SidebarFooter>
                 <NavFooter items={footerNavItems} className="mt-auto" />
                 <NavUser />
