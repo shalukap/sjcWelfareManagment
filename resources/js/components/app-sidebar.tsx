@@ -17,6 +17,7 @@ const mainNavItems: NavItem[] = [
     {
         title: 'Students',
         href: '/students',
+        icon: UsersRound,
     },
     {
         title: 'Payments',
