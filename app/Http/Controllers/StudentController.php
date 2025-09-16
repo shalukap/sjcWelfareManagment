@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-// Removed unnecessary imports
 use Inertia\Inertia;
 
 use App\Models\Student;
@@ -51,7 +50,7 @@ class StudentController extends Controller
      */
     public function show(string $id)
     {
-        // Not used in frontend, can be left empty or return student if needed
+
     }
 
     /**
