@@ -161,38 +161,4 @@ public function search()
             ->with('success', 'Fee assignment deleted successfully');
     }
 
-    /**
-     * Show form to search for a student's fee assignments by admission number.
-     */
-    public function searchStudent()
-    {
-        return Inertia::render('FeeAssignments/SearchStudent');
-    }
-
-    /**
-     * Get fee assignments for a specific student by admission number.
-     */
-    public function getStudentAssignments(Request $request)
-    {
-        $validated = $request->validate([
-            'admission_number' => 'required|string'
-        ]);
-
-        $student = Student::where('admission_number', $validated['admission_number'])->first();
-
-        if (!$student) {
-            return redirect()->back()
-                ->with('error', 'Student not found with admission number: ' . $validated['admission_number']);
-        }
-
-        $feeAssignments = FeeAssignment::with('student')
-            ->where('student_id', $student->id)
-            ->orderBy('academic_year', 'desc')
-            ->get();
-
-        return Inertia::render('FeeAssignments/StudentAssignments', [
-            'student' => $student,
-            'feeAssignments' => $feeAssignments
-        ]);
-    }
 }
