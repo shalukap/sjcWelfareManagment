@@ -91,8 +91,21 @@ export default function Index({ feeAssignments: originalAssignments, search: ini
     <AppLayout breadcrumbs={breadcrumbs}>
       <Head title="Fee Assignments" />
       <div className="h-full w-full overflow-x-auto p-4">
-        <form className="mx-auto max-w-full rounded-xl bg-slate-800 p-8 text-white shadow-lg">
+        <div className="mx-auto max-w-full rounded-xl bg-slate-800 p-8 text-white shadow-lg mb-6">
           <h2 className="mb-6 text-center text-2xl font-semibold">Fee Assignments</h2>
+
+          <div className="flex justify-center">
+            <Link
+              href={route('fee-assignments.create-grade')}
+              className="rounded-md bg-green-600 px-6 py-3 text-white hover:bg-green-700 text-lg font-medium"
+            >
+              Assign to Grade
+            </Link>
+          </div>
+        </div>
+
+        <form className="mx-auto max-w-full rounded-xl bg-slate-800 p-8 text-white shadow-lg">
+          <h3 className="mb-4 text-center text-xl font-semibold">Search Existing Assignments</h3>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
@@ -110,12 +123,6 @@ export default function Index({ feeAssignments: originalAssignments, search: ini
                 className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
               >
                 Search Student
-              </Link>
-              <Link
-                href={route('fee-assignments.create-grade')}
-                className="rounded-md bg-green-600 px-4 py-2 text-white hover:bg-green-700"
-              >
-                Assign to Grade
               </Link>
             </div>
           </div>
