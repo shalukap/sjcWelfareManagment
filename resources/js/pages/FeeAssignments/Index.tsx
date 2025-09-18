@@ -91,11 +91,18 @@ export default function Index({ feeAssignments: originalAssignments, search: ini
     <AppLayout breadcrumbs={breadcrumbs}>
       <Head title="Fee Assignments" />
       <div className="h-full w-full overflow-x-auto p-4">
-        <form className="mx-auto max-w-full rounded-xl bg-slate-800 p-8 text-white shadow-lg">
+        <div className="mx-auto max-w-full rounded-xl bg-slate-800 p-8 text-white shadow-lg mb-6">
           <h2 className="mb-6 text-center text-2xl font-semibold">Fee Assignments</h2>
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div>
+          <div className="flex flex-col gap-6 items-center">
+            <Link
+              href={route('fee-assignments.create-grade')}
+              className="rounded-md bg-green-600 px-6 py-3 text-white hover:bg-green-700 text-lg font-medium"
+            >
+              Assign to Grade
+            </Link>
+
+            <div className="w-full max-w-md">
               <input
                 type="text"
                 className="w-full rounded-md border border-gray-300 bg-slate-700 px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -104,22 +111,8 @@ export default function Index({ feeAssignments: originalAssignments, search: ini
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <div className="flex items-center gap-4">
-              <Link
-                href={route('fee-assignments.search')}
-                className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-              >
-                Search Student
-              </Link>
-              <Link
-                href={route('fee-assignments.create-grade')}
-                className="rounded-md bg-green-600 px-4 py-2 text-white hover:bg-green-700"
-              >
-                Assign to Grade
-              </Link>
-            </div>
           </div>
-        </form>
+        </div>
 
         <div className="mt-6 overflow-hidden rounded-lg bg-white shadow">
           <table className="min-w-full divide-y divide-gray-200">
