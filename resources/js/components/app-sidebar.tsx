@@ -12,7 +12,8 @@ import { route } from 'ziggy-js';
 const mainNavItems: NavItem[] = [
     {
         title: 'Dashboard',
-        href: '/dashboard',
+        href: route('dashboard'),
+        icon: LayoutGrid,
     },
     {
         title: 'Students',
@@ -26,7 +27,7 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Assign fees',
-        href: '/fees/assign',
+        href: '/fee-assignments',
         icon: DollarSign,
     },
 ];
