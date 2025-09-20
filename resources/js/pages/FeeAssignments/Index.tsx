@@ -1,6 +1,6 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import { FaEdit } from 'react-icons/fa';
 import { MdDeleteForever } from 'react-icons/md';
@@ -49,12 +49,6 @@ export default function Index({ feeAssignments: originalAssignments, search: ini
     setFilteredAssignments(filtered);
   }, [searchTerm, originalAssignments]);
 
-  useEffect(() => {
-
-    const createRoute = route('fee-assignments.create-grade');
-    const indexRoute = route('fee-assignments.index');
-
-  }, []);
 
   const handleDelete = (id: number) => {
     Swal.fire({
@@ -150,7 +144,10 @@ export default function Index({ feeAssignments: originalAssignments, search: ini
                     <Link as="button" href={route('fee-assignments.edit', assignment.id)}>
                       <FaEdit className="text-2xl hover:text-blue-700" />
                     </Link>
-                    <button onClick={() => handleDelete(assignment.id)}>
+                    <button
+                      onClick={() => handleDelete(assignment.id)}
+                      title="Delete Fee Assignment"
+                    >
                       <MdDeleteForever className="text-3xl hover:text-red-700" />
                     </button>
                   </td>

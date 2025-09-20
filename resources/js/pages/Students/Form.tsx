@@ -1,7 +1,7 @@
 import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, useForm, Link } from '@inertiajs/react';
+import { Head, useForm, Link, router } from '@inertiajs/react';
 import Swal from 'sweetalert2';
 import { route } from 'ziggy-js';
 
@@ -18,7 +18,7 @@ interface Student {
 interface Props {
   student?: Student;
   isEdit: boolean;
-  errors?: Record<string, string>; // Made optional
+  errors?: Record<string, string>;
 }
 
 export default function StudentForm({ student, isEdit, errors: serverErrors }: Props) {
@@ -42,8 +42,21 @@ export default function StudentForm({ student, isEdit, errors: serverErrors }: P
     is_active: student?.is_active ?? true,
   });
 
-  // Generate grades from 1 to 13
-  const grades = Array.from({ length: 13 }, (_, i) => (i + 1).toString());
+
+  const grades = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', 'A/L'];
+
+
+  const getClassOptions = (grade: string) => {
+    if (grade === 'A/L') {
+      return ['2025', '2026', '2027', '2028', '2029', '2030', '12X', '13X'];
+    } else {
+      const gradeNum = parseInt(grade);
+      return [
+        `${gradeNum}s1`, `${gradeNum}s2`, `${gradeNum}s3`, `${gradeNum}s4`, `${gradeNum}s5`, `${gradeNum}s6`,
+        `${gradeNum}T`, `${gradeNum}X`
+      ];
+    }
+  };
 
   const validateWhatsappNumber = (value: string): boolean => {
     if (!value) return true; // Optional field
@@ -78,6 +91,8 @@ export default function StudentForm({ student, isEdit, errors: serverErrors }: P
             title: 'Student has been updated successfully',
             showConfirmButton: false,
             timer: 1500,
+          }).then(() => {
+            router.visit(route('students.index'));
           });
         },
         onError: (errors) => {
@@ -99,6 +114,8 @@ export default function StudentForm({ student, isEdit, errors: serverErrors }: P
             title: 'New Student has been saved successfully',
             showConfirmButton: false,
             timer: 1500,
+          }).then(() => {
+            router.visit(route('students.index'));
           });
         },
         onError: (errors) => {
@@ -114,7 +131,6 @@ export default function StudentForm({ student, isEdit, errors: serverErrors }: P
     }
   }
 
-  // Combine server errors and form errors
   const allErrors = { ...formErrors, ...serverErrors };
 
   return (
@@ -193,13 +209,17 @@ export default function StudentForm({ student, isEdit, errors: serverErrors }: P
                 name="current_grade"
                 required
                 value={data.current_grade}
-                onChange={(e) => setData('current_grade', e.target.value)}
+                onChange={(e) => {
+                  setData('current_grade', e.target.value);
+                  setData('current_class', '');
+                }}
+                title="Select Current Grade"
                 className="w-full rounded-md border border-gray-600 bg-slate-700 p-2.5 text-white focus:border-blue-500 focus:ring-blue-500"
               >
                 <option value="">Select Grade</option>
                 {grades.map((grade) => (
                   <option key={grade} value={grade}>
-                    Grade {grade}
+                    {grade === 'A/L' ? 'A/L' : `Grade ${grade}`}
                   </option>
                 ))}
               </select>
@@ -210,15 +230,22 @@ export default function StudentForm({ student, isEdit, errors: serverErrors }: P
 
             <div>
               <label className="mb-2 block text-sm font-medium text-white">Current Class *</label>
-              <Input
-                type="text"
+              <select
                 name="current_class"
-                placeholder="Enter Current Class"
                 required
                 value={data.current_class}
                 onChange={(e) => setData('current_class', e.target.value)}
-                className="bg-slate-700 text-white"
-              />
+                title="Select Current Class"
+                className="w-full rounded-md border border-gray-600 bg-slate-700 p-2.5 text-white focus:border-blue-500 focus:ring-blue-500"
+                disabled={!data.current_grade}
+              >
+                <option value="">Select Class</option>
+                {data.current_grade && getClassOptions(data.current_grade).map((classOption) => (
+                  <option key={classOption} value={classOption}>
+                    {classOption}
+                  </option>
+                ))}
+              </select>
               {allErrors.current_class && (
                 <p className="mt-1 text-sm text-red-400">{allErrors.current_class}</p>
               )}

@@ -37,4 +37,33 @@ class FeeAssignment extends Model
     {
         return $this->hasMany(Payment::class);
     }
+
+    /**
+     * Update the status of the fee assignment based on payments.
+     */
+    public function updateStatus()
+    {
+        $totalPaid = $this->payments()->uncancelled()->sum('amount_paid');
+        $adjustedFee = $this->adjusted_fee ?? $this->assigned_fee;
+
+        if ($totalPaid >= $adjustedFee) {
+            $this->status = 'Paid';
+        } elseif ($totalPaid > 0) {
+            $this->status = 'Partially Paid';
+        } else {
+            $this->status = 'Unpaid';
+        }
+
+        $this->save();
+    }
+
+    /**
+     * Get the unpaid amount for this fee assignment.
+     */
+    public function getUnpaidAmount()
+    {
+        $totalPaid = $this->payments()->uncancelled()->sum('amount_paid');
+        $adjustedFee = $this->adjusted_fee ?? $this->assigned_fee;
+        return max(0, $adjustedFee - $totalPaid);
+    }
 }
