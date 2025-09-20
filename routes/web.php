@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\FeeAssignmentController;
+use App\Http\Controllers\PaymentController;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
@@ -17,6 +18,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::resource('students', StudentController::class);
 
+    Route::resource('payments', PaymentController::class)->except(['destroy']);
+    Route::delete('payments/{id}', [PaymentController::class, 'destroy'])->name('payments.destroy');
+    Route::post('payments/{id}/cancel', [PaymentController::class, 'cancel'])->name('payments.cancel');
+    Route::get('payments/search/students', [PaymentController::class, 'searchStudents'])->name('payments.search.students');
+    Route::get('payments/students/{studentId}/assignments', [PaymentController::class, 'getStudentAssignments'])->name('payments.students.assignments');
+    Route::get('payments/search/student-assignments', [PaymentController::class, 'searchStudentAssignments'])->name('payments.search.student.assignments');
 
     Route::prefix('fee-assignments')->group(function () {
 

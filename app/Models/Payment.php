@@ -37,21 +37,23 @@ class Payment extends Model
         'cancelled' => 'boolean',
     ];
 
-    /**
-     * Boot function to handle model events.
-     * Updates the related fee assignment status when a payment is saved or deleted.
-     */
+
     protected static function booted()
     {
         static::saved(function ($payment) {
-            // Only update if the payment is not cancelled
-            if (!$payment->cancelled) {
+            if (!$payment->cancelled && $payment->feeAssignment) {
                 $payment->feeAssignment->updateStatus();
             }
         });
 
         static::deleted(function ($payment) {
-            $payment->feeAssignment->updateStatus();
+            if (!$payment->relationLoaded('feeAssignment')) {
+                $payment->load('feeAssignment');
+            }
+
+            if ($payment->feeAssignment) {
+                $payment->feeAssignment->updateStatus();
+            }
         });
     }
 
