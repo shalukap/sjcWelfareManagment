@@ -94,6 +94,13 @@ export default function PaymentForm({ isEdit, payment, feeAssignments }: Props) 
     fee_assignment_ids: [] as number[],
   });
 
+  // Auto-set payment date to today for new payments
+  useEffect(() => {
+    if (!isEdit && !payment) {
+      setData('payment_date', new Date().toISOString().split('T')[0]);
+    }
+  }, [isEdit, payment, setData]);
+
 
 //   console.log('Processed payment_date:', data.payment_date);
 //   console.log('Processed deposit_date:', data.deposit_date);
@@ -107,7 +114,7 @@ export default function PaymentForm({ isEdit, payment, feeAssignments }: Props) 
       if (assignment) {
         console.log('Found assignment:', assignment);
         setAdmissionNumber(assignment.student.admission_number);
-        setAssignments([assignment]); // Only show the current assignment
+        setAssignments([assignment]);
         setSelectedAssignments([assignment.id]);
       } else {
         console.log('Assignment not found, creating minimal assignment data');
@@ -248,7 +255,19 @@ export default function PaymentForm({ isEdit, payment, feeAssignments }: Props) 
         return;
       }
 
+      const submitData = isEdit ? data : {
+        fee_assignment_ids: data.fee_assignment_ids,
+        amount_paid: data.amount_paid,
+        payment_date: data.payment_date,
+        payment_method: data.payment_method,
+        reference_number: data.reference_number,
+        deposit_date: data.deposit_date,
+        bank_name: data.bank_name,
+        is_realized: data.is_realized,
+      };
+
       post(route('payments.store'), {
+        ...submitData,
         onSuccess: () => {
           Swal.fire({
             position: 'top-end',
@@ -258,7 +277,7 @@ export default function PaymentForm({ isEdit, payment, feeAssignments }: Props) 
             timer: 1500,
           });
         },
-        onError: (errors) => {
+        onError: (errors: Record<string, string | string[]>) => {
           console.error('Payment creation error:', errors);
           Swal.fire('Error!', 'There was an error recording the payment.', 'error');
         },
@@ -323,23 +342,71 @@ export default function PaymentForm({ isEdit, payment, feeAssignments }: Props) 
                 <p className="text-xs text-gray-400 mt-1">
                   Enter the student's admission number and click Search to find their assignments
                 </p>
+
+                {/* Student Assignments Display - Show right after search */}
+                {assignments.length > 0 && (
+                  <div className="mt-6">
+                    <h3 className="mb-4 text-lg font-semibold">Unpaid Assignments</h3>
+                    <div className="space-y-3 max-h-60 overflow-y-auto">
+                      {assignments.map((assignment) => (
+                        <div key={assignment.id} className="flex items-center justify-between p-4 bg-slate-700 rounded-md">
+                          <div className="flex items-center space-x-3">
+                            <input
+                              type="checkbox"
+                              id={`assignment-${assignment.id}`}
+                              checked={selectedAssignments.includes(assignment.id)}
+                              onChange={() => handleAssignmentToggle(assignment.id)}
+                              className="h-4 w-4 text-blue-600 bg-slate-700 border-gray-300 rounded focus:ring-blue-500"
+                            />
+                            <label htmlFor={`assignment-${assignment.id}`} className="flex-1 cursor-pointer">
+                              <div className="font-medium">Academic Year {assignment.academic_year}</div>
+                              <div className="text-sm text-gray-300">
+                                Assigned: Rs. {assignment.assigned_fee.toLocaleString()}
+                                {assignment.adjusted_fee !== assignment.assigned_fee && (
+                                  <span className="ml-2 text-yellow-400">
+                                    Adjusted: Rs. {assignment.adjusted_fee.toLocaleString()}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-sm text-green-400 font-medium">
+                                Unpaid: Rs. {assignment.unpaid_amount.toLocaleString()}
+                              </div>
+                              {assignment.adjustment_reason && (
+                                <div className="text-xs text-gray-400 mt-1">
+                                  Reason: {assignment.adjustment_reason}
+                                </div>
+                              )}
+                            </label>
+                          </div>
+                          <div className="text-right">
+                            <div className={`text-xs px-2 py-1 rounded ${
+                              assignment.status === 'Unpaid' ? 'bg-red-600' :
+                              assignment.status === 'Partially Paid' ? 'bg-yellow-600' : 'bg-green-600'
+                            }`}>
+                              {assignment.status}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {selectedAssignments.length > 0 && (
+                      <div className="mt-6 p-4 bg-slate-700 rounded-md">
+                        <div className="flex justify-between items-center">
+                          <span className="text-lg font-medium">Total Due:</span>
+                          <span className="text-xl font-bold text-green-400">
+                            Rs. {totalAmount.toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="text-sm text-gray-300 mt-1">
+                          {selectedAssignments.length} assignment(s) selected - You can pay any amount up to the total due
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
-
-            {/* Receipt Number */}
-            <div>
-              <label className="mb-2 block text-sm font-medium text-white">
-                Receipt Number *
-              </label>
-              <Input
-                type="text"
-                placeholder="Enter receipt number"
-                value={data.receipt_number}
-                onChange={(e) => setData('receipt_number', e.target.value)}
-                className="bg-slate-700 text-white"
-                required
-              />
-            </div>
 
             {/* Payment Details */}
             <div>
@@ -351,8 +418,13 @@ export default function PaymentForm({ isEdit, payment, feeAssignments }: Props) 
                 value={data.payment_date}
                 onChange={(e) => setData('payment_date', e.target.value)}
                 className="bg-slate-700 text-white"
+                disabled={!isEdit}
                 required
               />
+              {!isEdit && (
+                <p className="text-xs text-gray-400 mt-1">
+                </p>
+              )}
             </div>
 
             <div>
@@ -369,7 +441,30 @@ export default function PaymentForm({ isEdit, payment, feeAssignments }: Props) 
                 step="0.01"
                 required
               />
+              {!isEdit && selectedAssignments.length > 0 && (
+                <p className="text-xs text-gray-400 mt-1">
+                  Total due: Rs. {totalAmount.toLocaleString()} | You can pay any amount up to this total
+                </p>
+              )}
             </div>
+
+            {/* Receipt Number - Only show for edit mode */}
+            {isEdit && (
+              <div>
+                <label className="mb-2 block text-sm font-medium text-white">
+                  Receipt Number
+                </label>
+                <Input
+                  type="text"
+                  value={data.receipt_number}
+                  className="bg-slate-700 text-white"
+                  readOnly
+                />
+                <p className="text-xs text-gray-400 mt-1">
+                  Receipt number is auto-generated and cannot be modified
+                </p>
+              </div>
+            )}
 
             <div>
               <label className="mb-2 block text-sm font-medium text-white">
@@ -475,68 +570,6 @@ export default function PaymentForm({ isEdit, payment, feeAssignments }: Props) 
             </div>
           </div>
 
-          {/* Fee Assignments - Only show for create mode */}
-          {!isEdit && assignments.length > 0 && (
-            <div className="mt-8">
-              <h3 className="mb-4 text-lg font-semibold">Select Assignments to Pay For</h3>
-              <div className="space-y-3 max-h-60 overflow-y-auto">
-                {assignments.map((assignment) => (
-                  <div key={assignment.id} className="flex items-center justify-between p-4 bg-slate-700 rounded-md">
-                    <div className="flex items-center space-x-3">
-                      <input
-                        type="checkbox"
-                        id={`assignment-${assignment.id}`}
-                        checked={selectedAssignments.includes(assignment.id)}
-                        onChange={() => handleAssignmentToggle(assignment.id)}
-                        className="h-4 w-4 text-blue-600 bg-slate-700 border-gray-300 rounded focus:ring-blue-500"
-                      />
-                      <label htmlFor={`assignment-${assignment.id}`} className="flex-1 cursor-pointer">
-                        <div className="font-medium">Academic Year {assignment.academic_year}</div>
-                        <div className="text-sm text-gray-300">
-                          Assigned: Rs. {assignment.assigned_fee.toLocaleString()}
-                          {assignment.adjusted_fee !== assignment.assigned_fee && (
-                            <span className="ml-2 text-yellow-400">
-                              Adjusted: Rs. {assignment.adjusted_fee.toLocaleString()}
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-sm text-green-400 font-medium">
-                          Unpaid: Rs. {assignment.unpaid_amount.toLocaleString()}
-                        </div>
-                        {assignment.adjustment_reason && (
-                          <div className="text-xs text-gray-400 mt-1">
-                            Reason: {assignment.adjustment_reason}
-                          </div>
-                        )}
-                      </label>
-                    </div>
-                    <div className="text-right">
-                      <div className={`text-xs px-2 py-1 rounded ${
-                        assignment.status === 'Unpaid' ? 'bg-red-600' :
-                        assignment.status === 'Partially Paid' ? 'bg-yellow-600' : 'bg-green-600'
-                      }`}>
-                        {assignment.status}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {selectedAssignments.length > 0 && (
-                <div className="mt-6 p-4 bg-slate-700 rounded-md">
-                  <div className="flex justify-between items-center">
-                    <span className="text-lg font-medium">Total Amount:</span>
-                    <span className="text-xl font-bold text-green-400">
-                      Rs. {totalAmount.toLocaleString()}
-                    </span>
-                  </div>
-                  <div className="text-sm text-gray-300 mt-1">
-                    {selectedAssignments.length} assignment(s) selected
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
 
           {/* Current Assignment Display - Only show for edit mode */}
           {isEdit && assignments.length > 0 && (

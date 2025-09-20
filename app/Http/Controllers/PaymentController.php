@@ -111,6 +111,38 @@ class PaymentController extends Controller
     }
 
     /**
+     * Search for student assignments by admission number.
+     */
+    public function searchStudentAssignments(Request $request)
+    {
+        $admissionNumber = $request->query('admission_number', '');
+
+        if (empty($admissionNumber)) {
+            return response()->json(['error' => 'Admission number is required'], 400);
+        }
+
+        $student = Student::where('admission_number', $admissionNumber)->first();
+
+        if (!$student) {
+            return response()->json(['error' => 'Student not found'], 404);
+        }
+
+        $assignments = FeeAssignment::with('student')
+            ->where('student_id', $student->id)
+            ->whereIn('status', ['Unpaid', 'Partially Paid'])
+            ->get()
+            ->map(function ($assignment) {
+                $assignment->unpaid_amount = $assignment->getUnpaidAmount();
+                return $assignment;
+            });
+
+        return response()->json([
+            'student' => $student,
+            'assignments' => $assignments
+        ]);
+    }
+
+    /**
      * Get unpaid fee assignments for a specific student.
      */
     public function getStudentAssignments(Request $request, $studentId)
@@ -140,7 +172,7 @@ class PaymentController extends Controller
         $validated = $request->validate([
             'fee_assignment_ids' => 'required|array|min:1',
             'fee_assignment_ids.*' => 'exists:fee_assignments,id',
-            'receipt_number' => 'required|string|unique:payments',
+            'amount_paid' => 'required|numeric|min:0.01',
             'payment_date' => 'required|date',
             'payment_method' => 'required|in:Cash,Cheque,Online',
             'reference_number' => 'nullable|string',
@@ -159,25 +191,43 @@ class PaymentController extends Controller
             ]);
         }
 
-        $totalAmount = 0;
+        $totalUnpaidAmount = $assignments->sum(function ($assignment) {
+            return $assignment->getUnpaidAmount();
+        });
+
+        if ($validated['amount_paid'] > $totalUnpaidAmount) {
+            return back()->withErrors([
+                'amount_paid' => 'Payment amount cannot exceed the total unpaid amount of Rs. ' . number_format($totalUnpaidAmount, 2)
+            ]);
+        }
+
+        $remainingPayment = $validated['amount_paid'];
         $payments = [];
 
+        $baseReceiptNumber = $this->generateReceiptNumber($validated['payment_date']);
+
         foreach ($assignments as $index => $assignment) {
+            if ($remainingPayment <= 0) {
+                break;
+            }
+
             $unpaidAmount = $assignment->getUnpaidAmount();
 
             if ($unpaidAmount <= 0) {
                 continue;
             }
 
+            $paymentAmount = min($remainingPayment, $unpaidAmount);
+
             $receiptNumber = count($assignments) > 1
-                ? $validated['receipt_number'] . '-' . ($index + 1)
-                : $validated['receipt_number'];
+                ? $baseReceiptNumber . '-' . ($index + 1)
+                : $baseReceiptNumber;
 
             $paymentData = [
                 'fee_assignment_id' => $assignment->id,
                 'receipt_number' => $receiptNumber,
                 'payment_date' => $validated['payment_date'],
-                'amount_paid' => $unpaidAmount,
+                'amount_paid' => $paymentAmount,
                 'payment_method' => $validated['payment_method'],
                 'reference_number' => $validated['reference_number'],
                 'deposit_date' => $validated['deposit_date'] ?? null,
@@ -186,11 +236,11 @@ class PaymentController extends Controller
             ];
 
             $payments[] = Payment::create($paymentData);
-            $totalAmount += $unpaidAmount;
+            $remainingPayment -= $paymentAmount;
         }
 
         return redirect()->route('payments.index')->with('success',
-            count($payments) . ' payment(s) recorded successfully for Rs. ' . number_format($totalAmount, 2)
+            count($payments) . ' payment(s) recorded successfully for Rs. ' . number_format($validated['amount_paid'], 2)
         );
     }
 
@@ -305,6 +355,30 @@ class PaymentController extends Controller
         ]);
 
         return redirect()->route('payments.index')->with('success', 'Payment cancelled successfully');
+    }
+
+    /**
+     * Generate a unique receipt number based on payment date.
+     */
+    private function generateReceiptNumber(string $paymentDate): string
+    {
+        $date = \Carbon\Carbon::parse($paymentDate)->format('Ymd');
+
+        // Find the last receipt number for this date
+        $lastPayment = Payment::where('receipt_number', 'like', $date . '-%')
+            ->orderBy('receipt_number', 'desc')
+            ->first();
+
+        if ($lastPayment) {
+            // Extract the sequence number and increment
+            $parts = explode('-', $lastPayment->receipt_number);
+            $sequence = (int) end($parts);
+            $newSequence = $sequence + 1;
+        } else {
+            $newSequence = 1;
+        }
+
+        return $date . '-' . str_pad($newSequence, 4, '0', STR_PAD_LEFT);
     }
 }
 
