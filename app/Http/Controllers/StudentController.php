@@ -40,6 +40,7 @@ class StudentController extends Controller
             'current_grade' => 'required',
             'current_class' => 'required',
             'is_active' => 'boolean',
+            'sibling_admission_no' => 'nullable|exists:students,admission_number',
         ]);
     Student::create($validated);
     return redirect()->route('students.index')->with('success', 'Student created successfully');
@@ -78,6 +79,7 @@ class StudentController extends Controller
             'current_grade' => 'required',
             'current_class' => 'required',
             'is_active' => 'boolean',
+            'sibling_admission_no' => 'nullable|exists:students,admission_number',
         ]);
         $student->update($validated);
         return redirect()->route('students.index')->with('success', 'Student updated successfully');

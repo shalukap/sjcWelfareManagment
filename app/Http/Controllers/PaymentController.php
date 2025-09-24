@@ -358,27 +358,24 @@ class PaymentController extends Controller
     }
 
     /**
-     * Generate a unique receipt number based on payment date.
+     * Generate a unique receipt number starting with F followed by 7 digits.
      */
     private function generateReceiptNumber(string $paymentDate): string
     {
-        $date = \Carbon\Carbon::parse($paymentDate)->format('Ymd');
-
-        // Find the last receipt number for this date
-        $lastPayment = Payment::where('receipt_number', 'like', $date . '-%')
+        // Find the last receipt number starting with F
+        $lastPayment = Payment::where('receipt_number', 'like', 'F%')
             ->orderBy('receipt_number', 'desc')
             ->first();
 
         if ($lastPayment) {
             // Extract the sequence number and increment
-            $parts = explode('-', $lastPayment->receipt_number);
-            $sequence = (int) end($parts);
+            $sequence = (int) substr($lastPayment->receipt_number, 1);
             $newSequence = $sequence + 1;
         } else {
             $newSequence = 1;
         }
 
-        return $date . '-' . str_pad($newSequence, 4, '0', STR_PAD_LEFT);
+        return 'F' . str_pad($newSequence, 7, '0', STR_PAD_LEFT);
     }
 }
 

@@ -69,6 +69,7 @@ export default function PaymentForm({ isEdit, payment, feeAssignments }: Props) 
   const [selectedAssignments, setSelectedAssignments] = useState<number[]>([]);
   const [admissionNumber, setAdmissionNumber] = useState('');
   const [isSearching, setIsSearching] = useState(false);
+  const [hasAutoSearched, setHasAutoSearched] = useState(false);
 
   const formatDateForInput = (dateString: string | null | undefined): string => {
     if (!dateString) return '';
@@ -94,12 +95,55 @@ export default function PaymentForm({ isEdit, payment, feeAssignments }: Props) 
     fee_assignment_ids: [] as number[],
   });
 
+  const searchStudentAssignments = async (admissionNum?: string) => {
+    const searchAdmissionNumber = admissionNum || admissionNumber;
+    if (!searchAdmissionNumber.trim()) {
+      Swal.fire('Error!', 'Please enter an admission number.', 'error');
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      const response = await fetch(route('payments.search.student.assignments', { admission_number: searchAdmissionNumber }));
+      const data = await response.json();
+
+      if (data.assignments && data.assignments.length > 0) {
+        setAssignments(data.assignments);
+        setSelectedAssignments([]);
+        Swal.fire('Success!', `Found ${data.assignments.length} assignment(s) for student.`, 'success');
+      } else {
+        setAssignments([]);
+        setSelectedAssignments([]);
+        Swal.fire('No Assignments Found', 'No unpaid assignments found for this student.', 'info');
+      }
+    } catch (error) {
+      console.error('Error searching assignments:', error);
+      Swal.fire('Error!', 'Failed to search for assignments.', 'error');
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
   // Auto-set payment date to today for new payments
   useEffect(() => {
     if (!isEdit && !payment) {
       setData('payment_date', new Date().toISOString().split('T')[0]);
     }
   }, [isEdit, payment, setData]);
+
+  // Auto-search for student assignments if admission_number is provided in URL
+  useEffect(() => {
+    if (!isEdit && !hasAutoSearched) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const admissionNumberParam = urlParams.get('admission_number');
+      if (admissionNumberParam) {
+        setAdmissionNumber(admissionNumberParam);
+        setHasAutoSearched(true);
+        // Trigger search immediately with the parameter
+        searchStudentAssignments(admissionNumberParam);
+      }
+    }
+  }, [isEdit, hasAutoSearched]);
 
 
 //   console.log('Processed payment_date:', data.payment_date);
@@ -140,33 +184,6 @@ export default function PaymentForm({ isEdit, payment, feeAssignments }: Props) 
     }
   }, [isEdit, payment, feeAssignments]);
 
-  const searchStudentAssignments = async () => {
-    if (!admissionNumber.trim()) {
-      Swal.fire('Error!', 'Please enter an admission number.', 'error');
-      return;
-    }
-
-    setIsSearching(true);
-    try {
-      const response = await fetch(route('payments.search.student.assignments', { admission_number: admissionNumber }));
-      const data = await response.json();
-
-      if (data.assignments && data.assignments.length > 0) {
-        setAssignments(data.assignments);
-        setSelectedAssignments([]);
-        Swal.fire('Success!', `Found ${data.assignments.length} assignment(s) for student.`, 'success');
-      } else {
-        setAssignments([]);
-        setSelectedAssignments([]);
-        Swal.fire('No Assignments Found', 'No unpaid assignments found for this student.', 'info');
-      }
-    } catch (error) {
-      console.error('Error searching assignments:', error);
-      Swal.fire('Error!', 'Failed to search for assignments.', 'error');
-    } finally {
-      setIsSearching(false);
-    }
-  };
 
   const handleAssignmentToggle = (assignmentId: number) => {
     const newSelectedAssignments = selectedAssignments.includes(assignmentId)
@@ -332,7 +349,7 @@ export default function PaymentForm({ isEdit, payment, feeAssignments }: Props) 
                   />
                   <button
                     type="button"
-                    onClick={searchStudentAssignments}
+                    onClick={() => searchStudentAssignments()}
                     disabled={isSearching || !admissionNumber.trim()}
                     className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
@@ -346,7 +363,7 @@ export default function PaymentForm({ isEdit, payment, feeAssignments }: Props) 
                 {/* Student Assignments Display - Show right after search */}
                 {assignments.length > 0 && (
                   <div className="mt-6">
-                    <h3 className="mb-4 text-lg font-semibold">Unpaid Assignments</h3>
+                    <h3 className="mb-4 text-lg font-semibold">Unpaid Dues</h3>
                     <div className="space-y-3 max-h-60 overflow-y-auto">
                       {assignments.map((assignment) => (
                         <div key={assignment.id} className="flex items-center justify-between p-4 bg-slate-700 rounded-md">
