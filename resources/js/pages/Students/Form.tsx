@@ -13,6 +13,7 @@ interface Student {
   current_grade: string;
   current_class: string;
   is_active: boolean;
+  sibling_admission_no?: string;
 }
 
 interface Props {
@@ -40,6 +41,7 @@ export default function StudentForm({ student, isEdit, errors: serverErrors }: P
     current_grade: student?.current_grade || '',
     current_class: student?.current_class || '',
     is_active: student?.is_active ?? true,
+    sibling_admission_no: student?.sibling_admission_no || '',
   });
 
 
@@ -200,6 +202,23 @@ export default function StudentForm({ student, isEdit, errors: serverErrors }: P
               )}
               {allErrors.whatsapp_number && (
                 <p className="mt-1 text-sm text-red-400">{allErrors.whatsapp_number}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-medium text-white">
+                Sibling Admission Number
+              </label>
+              <Input
+                type="text"
+                name="sibling_admission_no"
+                placeholder="Enter sibling's admission number (optional)"
+                value={data.sibling_admission_no}
+                onChange={(e) => setData('sibling_admission_no', e.target.value)}
+                className="bg-slate-700 text-white"
+              />
+              {allErrors.sibling_admission_no && (
+                <p className="mt-1 text-sm text-red-400">{allErrors.sibling_admission_no}</p>
               )}
             </div>
 

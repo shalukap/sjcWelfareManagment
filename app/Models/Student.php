@@ -16,6 +16,7 @@ class Student extends Model
         'current_grade',
         'current_class',
         'is_active',
+        'sibling_admission_no',
     ];
 
 

@@ -1,6 +1,6 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Head, Link, router,  } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import { CgAddR } from 'react-icons/cg';
 import { FaEdit } from 'react-icons/fa';
@@ -16,6 +16,7 @@ interface Student {
   current_grade: string;
   current_class: string;
   is_active: boolean;
+  sibling_admission_no?: string;
 }
 
 
@@ -91,9 +92,11 @@ export default function Index({ students: originalStudents }: { students: Studen
                 <th className="px-4 py-3 text-left text-sm font-semibold">Admission No</th>
                 <th className="px-4 py-3 text-left text-sm font-semibold">Name</th>
                 <th className="px-4 py-3 text-left text-sm font-semibold">WhatsApp</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold">Sibling Admission</th>
                 <th className="px-4 py-3 text-left text-sm font-semibold">Grade</th>
                 <th className="px-4 py-3 text-left text-sm font-semibold">Class</th>
                 <th className="px-4 py-3 text-left text-sm font-semibold">Status</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold">Payment</th>
                 <th className="px-4 py-3 text-left text-sm font-semibold">Action</th>
               </tr>
             </thead>
@@ -103,6 +106,7 @@ export default function Index({ students: originalStudents }: { students: Studen
                   <td className="px-4 py-2">{s.admission_number}</td>
                   <td className="px-4 py-2">{s.name}</td>
                   <td className="px-4 py-2">{s.whatsapp_number || 'N/A'}</td>
+                  <td className="px-4 py-2">{s.sibling_admission_no || 'N/A'}</td>
                   <td className="px-4 py-2">{s.current_grade}</td>
                   <td className="px-4 py-2">{s.current_class}</td>
                   <td className="px-4 py-2">
@@ -114,11 +118,19 @@ export default function Index({ students: originalStudents }: { students: Studen
                       {s.is_active ? 'Active' : 'Inactive'}
                     </span>
                   </td>
+                  <td className="px-4 py-2">
+                    <Link
+                      href={`${route('payments.create')}?admission_number=${s.admission_number}`}
+                      className="inline-flex items-center px-3 py-1 text-sm font-medium text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors"
+                    >
+                      Pay
+                    </Link>
+                  </td>
                   <td className="flex items-center gap-3 px-4 py-2">
                     <Link as="button" href={route('students.edit', s.id)}>
                       <FaEdit className="text-2xl hover:text-blue-700" />
                     </Link>
-                    <button onClick={() => handleDelete(s.id)}>
+                    <button onClick={() => handleDelete(s.id)} title="Delete Student">
                       <MdDeleteForever className="text-3xl hover:text-red-700" />
                     </button>
                   </td>
