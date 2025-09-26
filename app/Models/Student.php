@@ -22,4 +22,11 @@ class Student extends Model
     protected $casts = [
         'is_active' => 'boolean',
     ];
+
+public function feeAssignments()
+{
+    return $this->hasMany(FeeAssignment::class);
 }
+
+}
+

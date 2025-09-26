@@ -8,6 +8,9 @@ use Inertia\Inertia;
 use App\Models\Payment;
 use App\Models\FeeAssignment;
 use App\Models\Student;
+use App\Models\User;
+use Spatie\Browsershot\Browsershot;
+
 
 class PaymentController extends Controller
 {
@@ -238,10 +241,11 @@ class PaymentController extends Controller
             $payments[] = Payment::create($paymentData);
             $remainingPayment -= $paymentAmount;
         }
-
-        return redirect()->route('payments.index')->with('success',
+         return redirect()->route('payments.index')->with('success',
             count($payments) . ' payment(s) recorded successfully for Rs. ' . number_format($validated['amount_paid'], 2)
         );
+        
+        
     }
 
     /**
@@ -380,5 +384,20 @@ class PaymentController extends Controller
 
         return $date . '-' . str_pad($newSequence, 4, '0', STR_PAD_LEFT);
     }
+    public function generatePDF()
+    {
+        $lastpayment= Payment::with('feeAssignment.student')->uncancelled()->latest()->first();        
+        $template= view('reports.recipt', compact('lastpayment'))->render();
+        $pdf=Browsershot::html($template)->format('A5')->margins(50, 10, 5, 10)->paperSize(9.5, 5.5,'in')->landscape()->pdf();
+       
+       return response()->make($pdf, 200, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'inline; filename="reciept.pdf"',
+            ]);
+            
+       
+        
+    }
+
 }
 

@@ -5,6 +5,9 @@ use Inertia\Inertia;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\FeeAssignmentController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\CollectionReportController;
+use App\Http\Controllers\DueReportsController;
+
 
 Route::get('/', function () {
     return Inertia::render('welcome');
@@ -24,7 +27,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('payments/search/students', [PaymentController::class, 'searchStudents'])->name('payments.search.students');
     Route::get('payments/students/{studentId}/assignments', [PaymentController::class, 'getStudentAssignments'])->name('payments.students.assignments');
     Route::get('payments/search/student-assignments', [PaymentController::class, 'searchStudentAssignments'])->name('payments.search.student.assignments');
-
+    Route::get('reports/collectionreport', [CollectionReportController::class, 'index'])->name('report.collectionreport');
+    Route::get('reports/duereport', [DueReportsController::class, 'index'])->name('duereport');
+    Route::get('generate-duereport', [DueReportsController::class, 'generateDueReport'])->name('generateDueReport');
+    Route::get('generate-recipt',[PaymentController::class,'generatePDF'])->name('generate-recipt');
+    Route::get('generate-collection',[CollectionReportController::class,'generatecollectionreport'])->name('generatecollectionreport');
     Route::prefix('fee-assignments')->group(function () {
 
         Route::get('/create-grade', [FeeAssignmentController::class, 'createGrade'])->name('fee-assignments.create-grade');

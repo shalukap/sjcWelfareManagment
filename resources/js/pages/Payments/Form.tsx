@@ -276,6 +276,7 @@ export default function PaymentForm({ isEdit, payment, feeAssignments }: Props) 
             showConfirmButton: false,
             timer: 1500,
           });
+          window.open(route('generate-recipt'), '_blank');
         },
         onError: (errors: Record<string, string | string[]>) => {
           console.error('Payment creation error:', errors);

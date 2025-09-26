@@ -5,7 +5,7 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, Sid
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid,UsersRound,Coins,DollarSign } from 'lucide-react';
+import { BookOpen, Folder, LayoutGrid,UsersRound,Coins,DollarSign,NotebookText,HandCoins } from 'lucide-react';
 import AppLogo from './app-logo';
 import { route } from 'ziggy-js';
 
@@ -29,6 +29,18 @@ const mainNavItems: NavItem[] = [
         title: 'Assign fees',
         href: '/fee-assignments',
         icon: DollarSign,
+    },
+    {
+        title: 'Collection Report',
+        href: '/reports/collectionreport',
+        icon: HandCoins,
+       
+    },
+    {
+        title: 'Due Report',
+        href: '/reports/duereport',
+        icon: NotebookText,
+       
     },
 ];
 
