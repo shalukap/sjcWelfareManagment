@@ -22,11 +22,12 @@ jobs:
             cd ${{ secrets.APP_PATH }}
 
             # Make Git safe
-            git config --global --add safe.directory ${{ secrets.APP_PATH }}
+            sudo git config --global --add safe.directory ${{ secrets.APP_PATH }}
 
             # Pull latest code
-            git fetch --all
-            git reset --hard origin/main
+            sudo git fetch --all
+            sudo git reset --hard origin/main
+            sudo git clean -df
 
             # Ensure storage & cache directories exist
             mkdir -p storage bootstrap/cache node_modules
@@ -36,18 +37,18 @@ jobs:
             sudo chmod -R 775 storage bootstrap/cache node_modules
 
             # PHP dependencies
-            composer install --optimize-autoloader --no-dev
+            sudo composer install --optimize-autoloader --no-dev
 
             # Node dependencies & build
-            npm install
-            npm run build
+            sudo npm install
+            sudo npm run build
 
             # Laravel maintenance tasks
-            php artisan migrate --force
-            php artisan cache:clear
-            php artisan config:clear
-            php artisan route:clear
-            php artisan view:clear
+            sudo php artisan config:clear
+            sudo php artisan cache:clear
+            sudo php artisan route:clear
+            sudo php artisan migrate --force
+            sudo php artisan view:clear
 
             # Restart Apache
             sudo systemctl restart apache2
