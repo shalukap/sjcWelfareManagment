@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy to EC2 via Git Pull
+      - name: Deploy to EC2 via SSH
         uses: appleboy/ssh-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -18,17 +18,40 @@ jobs:
           key: ${{ secrets.EC2_KEY }}
           port: 22
           script: |
+            # Go to Laravel app folder
             cd ${{ secrets.APP_PATH }}
+
+            # Make Git safe
+            git config --global --add safe.directory ${{ secrets.APP_PATH }}
+
+            # Pull latest code
             git fetch --all
             git reset --hard origin/main
+
+            # Ensure storage & cache directories exist
+            mkdir -p storage bootstrap/cache node_modules
+
+            # Fix permissions
+            sudo chown -R www-data:www-data ${{ secrets.APP_PATH }}
+            sudo chmod -R 775 storage bootstrap/cache node_modules
+
+            # PHP dependencies
             composer install --optimize-autoloader --no-dev
+
+            # Node dependencies & build
             npm install
             npm run build
+
+            # Laravel maintenance tasks
             php artisan migrate --force
             php artisan cache:clear
             php artisan config:clear
             php artisan route:clear
             php artisan view:clear
-            sudo chown -R www-data:www-data ${{ secrets.APP_PATH }}
-            sudo chmod -R 775 ${{ secrets.APP_PATH }}/storage ${{ secrets.APP_PATH }}/bootstrap/cache
+
+            # Restart Apache
             sudo systemctl restart apache2
+
+      - name: Deployment finished
+        run: echo "✅ Deployment completed successfully!
+
