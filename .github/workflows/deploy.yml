@@ -53,5 +53,3 @@ jobs:
             # Restart Apache
             sudo systemctl restart apache2
 
-      - name: Deployment finished
-        run: echo "✅ Deployment completed successfully!
