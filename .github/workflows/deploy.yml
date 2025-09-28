@@ -10,39 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: 8.2
-          extensions: mbstring, bcmath, mysql, curl, xml, intl
-
-      - name: Install Composer dependencies
-        run: composer install --optimize-autoloader --no-dev
-
-      - name: Install Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 20
-
-      - name: Install frontend dependencies & build
-        run: |
-          npm install
-          npm run build
-
-      - name: Copy code to EC2
-        uses: appleboy/scp-action@v0.1.4
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_KEY }}
-          port: 22
-          source: "."
-          target: ${{ secrets.APP_PATH }}
-
-      - name: SSH & Run Deployment Commands
+      - name: Deploy to EC2 via Git Pull
         uses: appleboy/ssh-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -51,6 +19,8 @@ jobs:
           port: 22
           script: |
             cd ${{ secrets.APP_PATH }}
+            git fetch --all
+            git reset --hard origin/main
             composer install --optimize-autoloader --no-dev
             npm install
             npm run build
@@ -58,4 +28,7 @@ jobs:
             php artisan cache:clear
             php artisan config:clear
             php artisan route:clear
+            php artisan view:clear
+            sudo chown -R www-data:www-data ${{ secrets.APP_PATH }}
+            sudo chmod -R 775 ${{ secrets.APP_PATH }}/storage ${{ secrets.APP_PATH }}/bootstrap/cache
             sudo systemctl restart apache2
