@@ -17,6 +17,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function Dashboard() {
     const {studentsCount,cashToday,chequeToday,onlineToday}=usePage<{
         studentsCount: number;
+        teachersCount: number;
         cashToday: number;
         chequeToday: number;
         onlineToday: number;
