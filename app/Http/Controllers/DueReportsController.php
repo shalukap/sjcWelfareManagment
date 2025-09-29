@@ -74,7 +74,7 @@ class DueReportsController extends Controller
 
         $report= view('reports.duereport',compact('studentsWithDue','studentGroups','grade','class'))->render();   
           
-        $pdf=Browsershot::html($report)->setChromePath('/usr/bin/chromium-browser')->format('A4')->margins(5, 5, 5, 5)->pdf();
+        $pdf=Browsershot::html($report)->setChromePath('/usr/bin/chromium-browser')->noSandbox()->format('A4')->margins(5, 5, 5, 5)->pdf();
         return response()->make($pdf, 200, [
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'inline; filename="duereport.pdf"',
