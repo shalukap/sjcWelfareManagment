@@ -17,6 +17,7 @@ interface Payment {
   reference_number?: string;
   deposit_date?: string;
   bank_name?: string;
+  cheque_no?: string;
   is_realized: boolean;
   cancelled: boolean;
   cancellation_date?: string;
@@ -67,6 +68,7 @@ export default function Index({ payments: originalPayments }: { payments: Paymen
         String(payment.fee_assignment_id).includes(searchQuery) || // Allow searching by fee assignment ID
         payment.payment_method.toLowerCase().includes(searchQuery) ||
         String(payment.amount_paid).includes(searchQuery) ||
+        (payment.cheque_no?.toLowerCase().includes(searchQuery)) ||
         (payment.feeAssignment && !payment.feeAssignment.student && (searchQuery.toLowerCase().includes('unavailable') || searchQuery.toLowerCase().includes('missing'))) ||
         (!payment.feeAssignment && (searchQuery.toLowerCase().includes('missing') || searchQuery.toLowerCase().includes('assignment')))) && // Allow searching for missing data
         (filterMethod === 'all' || payment.payment_method === filterMethod) &&
@@ -167,7 +169,7 @@ export default function Index({ payments: originalPayments }: { payments: Paymen
                 <input
                   type="text"
                   className="w-full rounded-md border border-gray-300 bg-slate-700 px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Search by Receipt No, Admission No, Name, Fee Assignment ID, Method, Amount, or 'unavailable'/'missing'"
+                  placeholder="Search by Receipt No, Admission No, Name, Fee Assignment ID, Method, Amount, Cheque No, or 'unavailable'/'missing'"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -215,6 +217,7 @@ export default function Index({ payments: originalPayments }: { payments: Paymen
                 <th className="px-4 py-3 text-left text-sm font-semibold min-w-[100px]">Method</th>
                 <th className="px-4 py-3 text-left text-sm font-semibold min-w-[120px]">Reference</th>
                 <th className="px-4 py-3 text-left text-sm font-semibold min-w-[120px]">Bank</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold min-w-[120px]">Cheque No</th>
                 <th className="px-4 py-3 text-left text-sm font-semibold min-w-[120px]">Deposit Date</th>
                 <th className="px-4 py-3 text-left text-sm font-semibold min-w-[80px]">Realized</th>
                 <th className="px-4 py-3 text-left text-sm font-semibold min-w-[120px]">Payment Date</th>
@@ -276,6 +279,7 @@ export default function Index({ payments: originalPayments }: { payments: Paymen
                   <td className="px-4 py-2 min-w-[100px]">{payment.payment_method}</td>
                   <td className="px-4 py-2 min-w-[120px]">{payment.reference_number || 'N/A'}</td>
                   <td className="px-4 py-2 min-w-[120px]">{payment.bank_name || 'N/A'}</td>
+                  <td className="px-4 py-2 min-w-[120px]">{payment.cheque_no || 'N/A'}</td>
                   <td className="px-4 py-2 min-w-[120px]">{payment.deposit_date ? new Date(payment.deposit_date).toLocaleDateString() : 'N/A'}</td>
                   <td className="px-4 py-2 min-w-[80px]">
                     {payment.payment_method === 'Cheque' ? (

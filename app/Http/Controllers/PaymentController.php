@@ -50,6 +50,7 @@ class PaymentController extends Controller
                 'reference_number' => $payment->reference_number,
                 'deposit_date' => $payment->deposit_date,
                 'bank_name' => $payment->bank_name,
+                'cheque_no' => $payment->cheque_no,
                 'is_realized' => $payment->is_realized,
                 'cancelled' => $payment->cancelled,
                 'cancellation_date' => $payment->cancellation_date,
@@ -181,6 +182,7 @@ class PaymentController extends Controller
             'reference_number' => 'nullable|string',
             'deposit_date' => 'nullable|date|required_if:payment_method,Cheque',
             'bank_name' => 'nullable|string|required_if:payment_method,Cheque',
+            'cheque_no' => 'nullable|string|required_if:payment_method,Cheque',
             'is_realized' => 'boolean',
         ]);
 
@@ -235,6 +237,7 @@ class PaymentController extends Controller
                 'reference_number' => $validated['reference_number'],
                 'deposit_date' => $validated['deposit_date'] ?? null,
                 'bank_name' => $validated['bank_name'] ?? null,
+                'cheque_no' => $validated['cheque_no'] ?? null,
                 'is_realized' => $validated['payment_method'] === 'Cash' ? true : ($validated['is_realized'] ?? false),
             ];
 
@@ -244,8 +247,8 @@ class PaymentController extends Controller
          return redirect()->route('payments.index')->with('success',
             count($payments) . ' payment(s) recorded successfully for Rs. ' . number_format($validated['amount_paid'], 2)
         );
-        
-        
+
+
     }
 
     /**
@@ -301,6 +304,7 @@ class PaymentController extends Controller
             'reference_number' => 'nullable|string',
             'deposit_date' => 'nullable|date|required_if:payment_method,Cheque',
             'bank_name' => 'nullable|string|required_if:payment_method,Cheque',
+            'cheque_no' => 'nullable|string|required_if:payment_method,Cheque',
             'is_realized' => 'boolean',
         ]);
 
@@ -383,17 +387,17 @@ class PaymentController extends Controller
     }
     public function generatePDF()
     {
-        $lastpayment= Payment::with('feeAssignment.student')->uncancelled()->latest()->first();        
+        $lastpayment= Payment::with('feeAssignment.student')->uncancelled()->latest()->first();
         $template= view('reports.recipt', compact('lastpayment'))->render();
         $pdf=Browsershot::html($template)->format('A5')->margins(50, 10, 5, 10)->paperSize(9.5, 5.5,'in')->landscape()->pdf();
-       
+
        return response()->make($pdf, 200, [
                 'Content-Type' => 'application/pdf',
                 'Content-Disposition' => 'inline; filename="reciept.pdf"',
             ]);
-            
-       
-        
+
+
+
     }
 
 }

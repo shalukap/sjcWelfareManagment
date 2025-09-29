@@ -35,6 +35,7 @@ interface Payment {
   reference_number?: string;
   deposit_date?: string;
   bank_name?: string;
+  cheque_no?: string;
   is_realized: boolean;
   cancelled?: boolean;
   cancellation_date?: string;
@@ -90,6 +91,7 @@ export default function PaymentForm({ isEdit, payment, feeAssignments }: Props) 
     reference_number: payment?.reference_number || '',
     deposit_date: payment?.deposit_date ? formatDateForInput(payment.deposit_date) : '',
     bank_name: payment?.bank_name || '',
+    cheque_no: payment?.cheque_no || '',
     amount_paid: payment?.amount_paid || '',
     is_realized: payment?.is_realized ?? false,
     fee_assignment_ids: [] as number[],
@@ -224,6 +226,7 @@ export default function PaymentForm({ isEdit, payment, feeAssignments }: Props) 
         reference_number: data.reference_number || '',
         deposit_date: data.deposit_date || '',
         bank_name: data.bank_name || '',
+        cheque_no: data.cheque_no || '',
         is_realized: data.is_realized || false,
       };
 
@@ -280,6 +283,7 @@ export default function PaymentForm({ isEdit, payment, feeAssignments }: Props) 
         reference_number: data.reference_number,
         deposit_date: data.deposit_date,
         bank_name: data.bank_name,
+        cheque_no: data.cheque_no,
         is_realized: data.is_realized,
       };
 
@@ -498,6 +502,7 @@ export default function PaymentForm({ isEdit, payment, feeAssignments }: Props) 
                     if (!isEdit || payment?.payment_method !== 'Cheque') {
                       setData('deposit_date', '');
                       setData('bank_name', '');
+                      setData('cheque_no', '');
                     }
 
                     if (newMethod === 'Cash') {
@@ -558,6 +563,20 @@ export default function PaymentForm({ isEdit, payment, feeAssignments }: Props) 
                     placeholder="Enter bank name"
                     value={data.bank_name}
                     onChange={(e) => setData('bank_name', e.target.value)}
+                    className="bg-slate-700 text-white"
+                    required={data.payment_method === 'Cheque'}
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-white">
+                    Cheque Number *
+                  </label>
+                  <Input
+                    type="text"
+                    placeholder="Enter cheque number"
+                    value={data.cheque_no}
+                    onChange={(e) => setData('cheque_no', e.target.value)}
                     className="bg-slate-700 text-white"
                     required={data.payment_method === 'Cheque'}
                   />
