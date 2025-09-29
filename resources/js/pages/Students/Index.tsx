@@ -3,7 +3,7 @@ import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router,  } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import { CgAddR } from 'react-icons/cg';
-import { FaEdit } from 'react-icons/fa';
+import { FaEdit,FaMoneyBillAlt  } from 'react-icons/fa';
 import { MdDeleteForever } from 'react-icons/md';
 import Swal from 'sweetalert2';
 import { route } from 'ziggy-js';
@@ -119,10 +119,12 @@ export default function Index({ students: originalStudents }: { students: Studen
                     </span>
                   </td>
                   <td className="px-4 py-2">
+                   
                     <Link
                       href={`${route('payments.create')}?admission_number=${s.admission_number}`}
-                      className="inline-flex items-center px-3 py-1 text-sm font-medium text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors"
+                      className="inline-flex items-center px-3 py-1 text-sm font-medium text-white bg-red-600 rounded-xl hover:bg-blue-700 transition-colors"
                     >
+                       <FaMoneyBillAlt className='mr-2'/>
                       Pay
                     </Link>
                   </td>

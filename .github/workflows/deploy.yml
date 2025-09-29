@@ -1,0 +1,55 @@
+name: Laravel CI/CD Deploy
+
+on:
+  push:
+    branches:
+      - main  # deploy when main branch is updated
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to EC2 via SSH
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_KEY }}
+          port: 22
+          script: |
+            # Go to Laravel app folder
+            cd ${{ secrets.APP_PATH }}
+
+            # Make Git safe
+            sudo git config --global --add safe.directory ${{ secrets.APP_PATH }}
+
+            # Pull latest code
+            sudo git fetch --all
+            sudo git reset --hard origin/main
+            sudo git clean -df
+
+            # Ensure storage & cache directories exist
+            mkdir -p storage bootstrap/cache node_modules
+
+            # Fix permissions
+            sudo chown -R www-data:www-data ${{ secrets.APP_PATH }}
+            sudo chmod -R 775 storage bootstrap/cache node_modules
+
+            # PHP dependencies
+            sudo composer install --optimize-autoloader --no-dev
+
+            # Node dependencies & build
+            sudo npm install
+            sudo npm run build
+
+            # Laravel maintenance tasks
+            sudo php artisan config:clear
+            sudo php artisan cache:clear
+            sudo php artisan route:clear
+            sudo php artisan migrate --force
+            sudo php artisan view:clear
+
+            # Restart Apache
+            sudo systemctl restart apache2
+
