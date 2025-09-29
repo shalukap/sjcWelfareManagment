@@ -385,7 +385,7 @@ class PaymentController extends Controller
     {
         $lastpayment= Payment::with('feeAssignment.student')->uncancelled()->latest()->first();        
         $template= view('reports.recipt', compact('lastpayment'))->render();
-        $pdf=Browsershot::html($template)->format('A5')->margins(50, 10, 5, 10)->paperSize(9.5, 5.5,'in')->landscape()->pdf();
+        $pdf=Browsershot::html($template)->setChromePath('/usr/bin/chromium-browser')->format('A5')->margins(50, 10, 5, 10)->paperSize(9.5, 5.5,'in')->landscape()->pdf();
        
        return response()->make($pdf, 200, [
                 'Content-Type' => 'application/pdf',
