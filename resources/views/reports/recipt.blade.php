@@ -10,6 +10,8 @@
     <div class="grid grid-cols-2">
     <div>
         <h3>Reciept to:  {{$lastpayment->feeAssignment->student->name}}</h3>
+        <p>Admission number: {{$lastpayment->feeAssignment->student->admission_number}}</p>
+        <p>Class: {{$lastpayment->feeAssignment->student->current_class}}</p>
 
     </div>
     <div class="ml-auto">
@@ -37,9 +39,9 @@
              @if($lastpayment->payment_method=='Cheque')             
             <p>Cheque Number:{{$lastpayment->cheque_no}}</p>
             <p>Cheques valid subject to realization</p>
-            @elseif($lastpayment->payment_method=='online')
-            <p>Reference No: {{ $lastpayment->ref_no }}</p>
-            <p>Deposit Date: {{ $lastpayment->deposit_date }}</p>
+            @elseif($lastpayment->payment_method=='Online')
+            <p>Reference No: {{ $lastpayment->reference_number }}</p>
+            <p>Deposit Date: {{ $lastpayment->deposit_date->format('Y-m-d')}}</p>
             @endif
         </div>
         <div class="m-5">
