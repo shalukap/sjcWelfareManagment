@@ -35,6 +35,7 @@ interface Payment {
   reference_number?: string;
   deposit_date?: string;
   bank_name?: string;
+  cheque_no?: string;
   is_realized: boolean;
   cancelled?: boolean;
   cancellation_date?: string;
@@ -90,6 +91,7 @@ export default function PaymentForm({ isEdit, payment, feeAssignments }: Props) 
     reference_number: payment?.reference_number || '',
     deposit_date: payment?.deposit_date ? formatDateForInput(payment.deposit_date) : '',
     bank_name: payment?.bank_name || '',
+    cheque_no: payment?.cheque_no || '',
     amount_paid: payment?.amount_paid || '',
     is_realized: payment?.is_realized ?? false,
     fee_assignment_ids: [] as number[],
@@ -224,6 +226,7 @@ export default function PaymentForm({ isEdit, payment, feeAssignments }: Props) 
         reference_number: data.reference_number || '',
         deposit_date: data.deposit_date || '',
         bank_name: data.bank_name || '',
+        cheque_no: data.cheque_no || '',
         is_realized: data.is_realized || false,
       };
 
@@ -266,7 +269,7 @@ export default function PaymentForm({ isEdit, payment, feeAssignments }: Props) 
           }
         },
       });
-    } else {
+  } else {
       if (selectedAssignments.length === 0) {
         Swal.fire('Error!', 'Please select at least one assignment to pay for.', 'error');
         return;
@@ -280,6 +283,7 @@ export default function PaymentForm({ isEdit, payment, feeAssignments }: Props) 
         reference_number: data.reference_number,
         deposit_date: data.deposit_date,
         bank_name: data.bank_name,
+        cheque_no: data.cheque_no,
         is_realized: data.is_realized,
       };
 
@@ -496,18 +500,21 @@ export default function PaymentForm({ isEdit, payment, feeAssignments }: Props) 
 
                   if (newMethod !== 'Cheque') {
                     if (!isEdit || payment?.payment_method !== 'Cheque') {
-                      setData('deposit_date', '');
                       setData('bank_name', '');
+                      setData('cheque_no', '');
                     }
+                  }
 
-                    if (newMethod === 'Cash') {
-                      setData('is_realized', true);
-                    }
-                  } else {
+                  if (newMethod === 'Cash') {
+                    setData('is_realized', true);
+                  } else if (!isEdit) {
+                    // default: not realized unless cash
+                    setData('is_realized', false);
+                  }
 
-                    if (!isEdit) {
-                      setData('is_realized', false);
-                    }
+                  // Only keep deposit_date for Online payments; clear for other methods
+                  if (newMethod !== 'Online') {
+                    setData('deposit_date', '');
                   }
                 }}
                 className="w-full rounded-md border border-gray-600 bg-slate-700 p-2.5 text-white focus:border-blue-500 focus:ring-blue-500"
@@ -534,21 +541,39 @@ export default function PaymentForm({ isEdit, payment, feeAssignments }: Props) 
               />
             </div>
 
-            {data.payment_method === 'Cheque' && (
+            {data.payment_method === 'Online' && (
               <>
                 <div>
                   <label className="mb-2 block text-sm font-medium text-white">
-                    Deposit Date *
+                    Deposit Date
                   </label>
                   <Input
                     type="date"
                     value={data.deposit_date}
                     onChange={(e) => setData('deposit_date', e.target.value)}
                     className="bg-slate-700 text-white"
-                    required={data.payment_method === 'Cheque'}
+                    required={false}
                   />
                 </div>
 
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-white">
+                    Bank Name
+                  </label>
+                  <Input
+                    type="text"
+                    placeholder="Enter bank name"
+                    value={data.bank_name}
+                    onChange={(e) => setData('bank_name', e.target.value)}
+                    className="bg-slate-700 text-white"
+                    required={false}
+                  />
+                </div>
+              </>
+            )}
+
+            {data.payment_method === 'Cheque' && (
+                <>
                 <div>
                   <label className="mb-2 block text-sm font-medium text-white">
                     Bank Name *
@@ -562,8 +587,24 @@ export default function PaymentForm({ isEdit, payment, feeAssignments }: Props) 
                     required={data.payment_method === 'Cheque'}
                   />
                 </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-white">
+                    Cheque Number *
+                  </label>
+                  <Input
+                    type="text"
+                    placeholder="Enter cheque number"
+                    value={data.cheque_no}
+                    onChange={(e) => setData('cheque_no', e.target.value)}
+                    className="bg-slate-700 text-white"
+                    required={data.payment_method === 'Cheque'}
+                  />
+                </div>
               </>
             )}
+
+            {/* deposit_date inputs are shown for Online payments earlier in the form */}
 
             {/* Payment Status - Available for all payment methods */}
             <div className="md:col-span-2">

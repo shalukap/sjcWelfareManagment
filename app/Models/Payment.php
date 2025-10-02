@@ -22,6 +22,7 @@ class Payment extends Model
         'deposit_date',
         'cheque_number',
         'bank_name',
+        'cheque_no',
         'is_realized',
         'cancelled',
         'cancellation_date',
