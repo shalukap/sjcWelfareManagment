@@ -35,7 +35,7 @@
         <div>
              <p>Paymet Method: {{$lastpayment->payment_method}}</p>
              @if($lastpayment->payment_method=='Cheque')             
-            <p>Cheque Number:{{$lastpayment->cheque_number}}</p>
+            <p>Cheque Number:{{$lastpayment->cheque_no}}</p>
             <p>Cheques valid subject to realization</p>
             @elseif($lastpayment->payment_method=='online')
             <p>Reference No: {{ $lastpayment->ref_no }}</p>
