@@ -20,6 +20,7 @@ class Payment extends Model
         'payment_method',
         'reference_number',
         'deposit_date',
+        'cheque_number',
         'bank_name',
         'is_realized',
         'cancelled',

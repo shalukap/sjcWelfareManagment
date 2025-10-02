@@ -11,14 +11,14 @@
     <h1 class="text-2xl font-bold text-black text-center">St Joseph's College Facilitie fees</h1>
     <h3 class="text-xl font-bold text-black text-center">Collection report</h3>
     <p class="text-lg font-bold text-black">Date - {{now()->format('Y-m-d')}}</p>
-    <table class="w-full border-2 text-black m-3 border-black">
-        <thead class="bg-black text-lg text-white border-black">
+    <table class="w-full text-black m-3" >
+        <thead class="bg-black text-lg text-white">
         <tr>
-            <th class="border-1 border-black">Receipt number</th>
-            <th class="border-1 border-black">Payment Date</th>
-            <th class="border-1 border-black">Student Name</th>
-            <th class="border-1 border-black">Amount</th>
-            <th class="border-1 border-black">Method</th>
+            <th>Receipt number</th>
+            <th>Payment Date</th>
+            <th>Student Name</th>
+            <th>Amount</th>
+            <th>Method</th>
         </tr>
         </thead>
         <tbody>
@@ -26,11 +26,11 @@
         @foreach ($payments as $payment)
         @php $total += $payment->amount_paid; @endphp
             <tr class="odd:bg-white even:bg-gray-100 text-center">
-                <td class="border-1 border-black">{{ $payment->receipt_number }}</td>
-                <td class="border-1 border-black">{{ $payment->payment_date->format('Y-m-d') }}</td>
-                <td class="border-1 border-black">{{ $payment->feeAssignment->student->name??'N/A' }}</td>
-                <td class="border-1 border-black">{{ $payment->amount_paid }}</td>
-                <td class="border-1 border-black"> {{ $payment->payment_method }}</td>
+                <td>{{ $payment->receipt_number }}</td>
+                <td>{{ $payment->payment_date->format('Y-m-d') }}</td>
+                <td>{{ $payment->feeAssignment->student->name??'N/A' }}</td>
+                <td>{{ $payment->amount_paid }}</td>
+                <td> {{ $payment->payment_method }}</td>
             </tr>   
         @endforeach  
         </tbody>

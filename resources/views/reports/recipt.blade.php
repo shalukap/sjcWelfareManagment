@@ -34,8 +34,13 @@
     <div class="grid grid-cols-2 mt-16">
         <div>
              <p>Paymet Method: {{$lastpayment->payment_method}}</p>
+             @if($lastpayment->payment_method=='Cheque')             
             <p>Cheque Number:{{$lastpayment->cheque_number}}</p>
             <p>Cheques valid subject to realization</p>
+            @elseif($lastpayment->payment_method=='online')
+            <p>Reference No: {{ $lastpayment->ref_no }}</p>
+            <p>Deposit Date: {{ $lastpayment->deposit_date }}</p>
+            @endif
         </div>
         <div class="m-5">
             ............................................................................................<br>
