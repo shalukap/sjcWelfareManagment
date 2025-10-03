@@ -224,9 +224,8 @@ class PaymentController extends Controller
 
             $paymentAmount = min($remainingPayment, $unpaidAmount);
 
-            $receiptNumber = count($assignments) > 1
-                ? $baseReceiptNumber . '-' . ($index + 1)
-                : $baseReceiptNumber;
+
+            $receiptNumber = $baseReceiptNumber;
 
             $paymentData = [
                 'fee_assignment_id' => $assignment->id,
@@ -297,7 +296,10 @@ class PaymentController extends Controller
 
         $validated = $request->validate([
             'fee_assignment_id' => 'required|exists:fee_assignments,id',
-            'receipt_number' => 'required|unique:payments,receipt_number,' . $id,
+            // Receipt numbers are now shared across multiple payments when a single
+            // transaction covers multiple assignments, so we no longer enforce DB-level
+            // uniqueness in validation here.
+            'receipt_number' => 'required|string|max:255',
             'payment_date' => 'required|date',
             'amount_paid' => 'required|numeric|min:0.01',
             'payment_method' => 'required|in:Cash,Cheque,Online',
