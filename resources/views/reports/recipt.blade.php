@@ -23,14 +23,26 @@
     
     <hr>
     <table class="w-full text-black m-3 text-sm border-1">
-        <tr class="border-b">
-            <th>Description</th>
-            <th>Amount</th>
-        </tr>
-        <tr class="odd:bg-white even:bg-gray-100 text-center">
-        <td>{{$lastpayment->feeAssignment->student->current_class}} Facility fees for {{$lastpayment->feeAssignment->academic_year}}</td>
-        <td>{{$lastpayment->amount_paid}}</td>
-        </tr>
+        <thead>
+            <tr class="border-b">
+                <th>Description</th>
+                <th>Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach ($payments as $payment)
+            <tr class="odd:bg-white even:bg-gray-100 text-center">
+            <td>{{$payment->feeAssignment->student->current_class??'N/A'}} Facility fees for {{$payment->feeAssignment->academic_year??'N/A'}}</td>
+            <td>{{$payment->amount_paid}}</td>
+            </tr>
+            @endforeach
+        </tbody>
+        <tfoot>
+            <tr class="bg-gray-300 font-bold text-center">
+                <td colspan="2">Total</td>
+                <td>{{number_format($payments->sum($amount_paid),2)}}</td>
+            </tr>
+        </tfoot>
     </table>
    
     <div class="grid grid-cols-2 mt-16">

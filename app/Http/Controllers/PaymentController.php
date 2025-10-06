@@ -390,7 +390,15 @@ class PaymentController extends Controller
     public function generatePDF()
     {
         $lastpayment= Payment::with('feeAssignment.student')->uncancelled()->latest()->first();
-        $template= view('reports.recipt', compact('lastpayment'))->render();
+        if (!$lastpayment) {
+             return back()->with('error', 'No uncancelled payments found.');                      
+        } 
+        $payments = Payment::with('feeAssignment.student')
+                ->where('receipt_number', $lastpayment->receipt_number)
+                ->get();  
+          
+        $template= view('reports.recipt', compact('payments','lastpayment'))->render();
+
 
         //$pdf=Browsershot::html($template)->format('A5')->margins(50, 10, 5, 10)->paperSize(9.5, 5.5,'in')->landscape()->pdf();
         $pdf=Browsershot::html($template)->setChromePath('/usr/bin/google-chrome')->noSandbox()->format('A5')->margins(50, 10, 5, 10)->paperSize(9.5, 5.5,'in')->landscape()->pdf();
