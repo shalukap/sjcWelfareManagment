@@ -29,20 +29,54 @@ export default function Index({ students: originalStudents }: { students: Studen
     },
   ];
 
-  const [searchStudent, setSearchStudent] = useState('');
+  const [searchAdmission, setSearchAdmission] = useState('');
+  const [searchName, setSearchName] = useState('');
+  const [selectedGrade, setSelectedGrade] = useState('');
+  const [selectedClass, setSelectedClass] = useState('');
   const [filteredStudents, setFilteredStudents] = useState<Student[]>(originalStudents);
 
+  const grades = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', 'A/L'];
+
+  const getClassOptions = (grade: string) => {
+    if (grade === 'A/L') {
+      return ['2025', '2026', '2027', '2028', '2029', '2030', '12X', '13X'];
+    } else {
+      const gradeNum = parseInt(grade);
+      return [
+        `${gradeNum}s1`, `${gradeNum}s2`, `${gradeNum}s3`, `${gradeNum}s4`, `${gradeNum}s5`, `${gradeNum}s6`,
+        `${gradeNum}T`, `${gradeNum}X`
+      ];
+    }
+  };
+
   useEffect(() => {
-    const searchQuery = searchStudent.toLowerCase();
-    const filtered = originalStudents.filter(
-      (student) =>
-        student.admission_number.toLowerCase().includes(searchQuery) ||
-        student.name.toLowerCase().includes(searchQuery) ||
-        student.current_grade.toLowerCase().includes(searchQuery) ||
-        student.current_class.toLowerCase().includes(searchQuery)
-    );
+
+    setSelectedClass('');
+  }, [selectedGrade]);
+
+  useEffect(() => {
+    let filtered = [...originalStudents];
+
+    if (selectedGrade) {
+      filtered = filtered.filter(student => student.current_grade === selectedGrade);
+    }
+
+    if (selectedClass) {
+      filtered = filtered.filter(student => student.current_class === selectedClass);
+    }
+
+    if (searchAdmission) {
+      const q = searchAdmission.toLowerCase();
+      filtered = filtered.filter(student => student.admission_number.toLowerCase().includes(q));
+    }
+
+    if (searchName) {
+      const q = searchName.toLowerCase();
+      filtered = filtered.filter(student => student.name.toLowerCase().includes(q));
+    }
+
     setFilteredStudents(filtered);
-  }, [searchStudent, originalStudents]);
+  }, [searchAdmission, searchName, selectedGrade, selectedClass, originalStudents]);
 
   const handleDelete = (id: number) => {
     Swal.fire({
@@ -74,14 +108,63 @@ export default function Index({ students: originalStudents }: { students: Studen
         <form className="mx-auto max-w-full rounded-xl bg-slate-800 p-8 text-white shadow-lg">
           <h2 className="mb-6 text-center text-2xl font-semibold">Student Records</h2>
 
-          <div>
-            <input
-              type="text"
-              className="w-full rounded-md border border-gray-300 bg-slate-700 px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Search by Admission No, Name, Grade, or Class"
-              value={searchStudent}
-              onChange={(e) => setSearchStudent(e.target.value)}
-            />
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+            <div>
+              <label className="mb-2 block text-sm font-medium text-white">Grade</label>
+              <select
+                title="Select Grade"
+                value={selectedGrade}
+                onChange={(e) => setSelectedGrade(e.target.value)}
+                className="w-full rounded-md border border-gray-600 bg-slate-700 p-2.5 text-white focus:border-blue-500 focus:ring-blue-500"
+              >
+                <option value="">All Grades</option>
+                {grades.map((grade) => (
+                  <option key={grade} value={grade}>
+                    {grade === 'A/L' ? 'A/L' : `Grade ${grade}`}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-medium text-white">Class</label>
+              <select
+                title="Select Class"
+                value={selectedClass}
+                onChange={(e) => setSelectedClass(e.target.value)}
+                className="w-full rounded-md border border-gray-600 bg-slate-700 p-2.5 text-white focus:border-blue-500 focus:ring-blue-500"
+                disabled={!selectedGrade}
+              >
+                <option value="">All Classes</option>
+                {selectedGrade && getClassOptions(selectedGrade).map((classOption) => (
+                  <option key={classOption} value={classOption}>
+                    {classOption}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-medium text-white">Search by Admission No</label>
+              <input
+                type="text"
+                className="w-full rounded-md border border-gray-300 bg-slate-700 px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Admission No"
+                value={searchAdmission}
+                onChange={(e) => setSearchAdmission(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-medium text-white">Search by Name</label>
+              <input
+                type="text"
+                className="w-full rounded-md border border-gray-300 bg-slate-700 px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Student Name"
+                value={searchName}
+                onChange={(e) => setSearchName(e.target.value)}
+              />
+            </div>
           </div>
         </form>
 
@@ -119,7 +202,7 @@ export default function Index({ students: originalStudents }: { students: Studen
                     </span>
                   </td>
                   <td className="px-4 py-2">
-                   
+
                     <Link
                       href={`${route('payments.create')}?admission_number=${s.admission_number}`}
                       className="inline-flex items-center px-3 py-1 text-sm font-medium text-white bg-red-600 rounded-xl hover:bg-blue-700 transition-colors"

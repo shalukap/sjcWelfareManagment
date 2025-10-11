@@ -100,14 +100,31 @@ class PaymentController extends Controller
     public function searchStudents(Request $request)
     {
         $query = $request->query('q', '');
+        $grade = $request->query('grade', '');
+        $class = $request->query('class', '');
 
-        if (empty($query)) {
+        if (empty($query) && empty($grade) && empty($class)) {
             return response()->json([]);
         }
 
-        $students = Student::where('admission_number', 'like', "%{$query}%")
-            ->orWhere('name', 'like', "%{$query}%")
-            ->orderBy('name')
+        $students = Student::query();
+
+        if (!empty($grade)) {
+            $students->where('current_grade', $grade);
+        }
+
+        if (!empty($class)) {
+            $students->where('current_class', $class);
+        }
+
+        if (!empty($query)) {
+            $students->where(function($q) use ($query) {
+                $q->where('admission_number', 'like', "%{$query}%")
+                  ->orWhere('name', 'like', "%{$query}%");
+            });
+        }
+
+        $results = $students->orderBy('name')
             ->limit(10)
             ->get(['id', 'admission_number', 'name', 'current_grade', 'current_class']);
 
@@ -173,18 +190,21 @@ class PaymentController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'fee_assignment_ids' => 'required|array|min:1',
-            'fee_assignment_ids.*' => 'exists:fee_assignments,id',
-            'amount_paid' => 'required|numeric|min:0.01',
-            'payment_date' => 'required|date',
-            'payment_method' => 'required|in:Cash,Cheque,Online',
-            'reference_number' => 'nullable|string',
-            'deposit_date' => 'nullable|date|required_if:payment_method,Online',
-            'bank_name' => 'nullable|string|required_if:payment_method,Cheque|required_if:payment_method,Online',
-            'cheque_no' => 'nullable|string|required_if:payment_method,Cheque',
-            'is_realized' => 'boolean',
-        ]);
+                $validated = $request->validate([
+                    'fee_assignment_ids' => 'required|array',
+                    'fee_assignment_ids.*' => 'required|exists:fee_assignments,id',
+                    'payment_date' => 'required|date',
+                    // frontend and DB use capitalized values: Cash, Cheque, Online
+                    'payment_method' => 'required|in:Cash,Cheque,Online',
+                    'amount_paid' => 'required|numeric|min:0',
+                    'reference_number' => 'nullable|string',
+                    // deposit_date is required when Online
+                    'deposit_date' => 'nullable|date|required_if:payment_method,Online',
+                    // bank_name is required for Cheque and Online
+                    'bank_name' => 'nullable|string|required_if:payment_method,Cheque|required_if:payment_method,Online',
+                    'cheque_no' => 'nullable|string|required_if:payment_method,Cheque',
+                    'is_realized' => 'boolean',
+                ]);
 
         $feeAssignmentIds = $validated['fee_assignment_ids'];
         $assignments = FeeAssignment::whereIn('id', $feeAssignmentIds)->get();
@@ -393,6 +413,8 @@ class PaymentController extends Controller
         $template= view('reports.recipt', compact('lastpayment'))->render();
 
         $pdf=Browsershot::html($template)->setChromePath('/usr/bin/google-chrome')->noSandbox()->format('A5')->margins(50, 10, 5, 10)->paperSize(9.5, 5.5,'in')->landscape()->pdf();
+
+        // $pdf=Browsershot::html($template)->format('A5')->margins(50, 10, 5, 10)->paperSize(9.5, 5.5,'in')->landscape()->pdf();
 
 
        return response()->make($pdf, 200, [
