@@ -42,8 +42,13 @@ class Payment extends Model
 
     protected static function booted()
     {
+
         static::saved(function ($payment) {
-            if (!$payment->cancelled && $payment->feeAssignment) {
+            if (!$payment->relationLoaded('feeAssignment')) {
+                $payment->load('feeAssignment');
+            }
+
+            if ($payment->feeAssignment) {
                 $payment->feeAssignment->updateStatus();
             }
         });
