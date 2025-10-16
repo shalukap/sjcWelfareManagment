@@ -14,6 +14,7 @@ class CollectionReportController extends Controller
 
         return Inertia::render('CollectionReport/index');
     }
+
     public function generatecollectionreport(Request $request)
     {
         $startDate=$request->startDate;

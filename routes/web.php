@@ -14,10 +14,20 @@ Route::get('/', function () {
     return Inertia::render('welcome');
 })->name('home');
 
+// Temporary diagnostic route (plain text) to verify the upgrade URL is reachable
+Route::get('students/upgrade-debug', function () {
+    return response('upgrade route reachable', 200)
+        ->header('Content-Type', 'text/plain');
+});
+
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    
 
+
+
+    // Students upgrade routes (placed before resource to avoid conflicts)
+    Route::get('students/upgrade', [StudentController::class, 'showUpgradeForm'])->name('students.upgrade.form');
+    Route::post('students/upgrade', [StudentController::class, 'upgrade'])->name('students.upgrade');
 
     Route::resource('students', StudentController::class);
 

@@ -1,6 +1,6 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 
 export default function CreateGrade({ grades }: { grades: string[] }) {
@@ -23,7 +23,8 @@ export default function CreateGrade({ grades }: { grades: string[] }) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    router.post(route('fee-assignments.store-grade'), data);
+    console.log('CreateGrade submit handler invoked', data);
+    post(route('fee-assignments.store-grade'));
   };
 
   return (

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\DB;
 
 use App\Models\Student;
 
@@ -18,6 +19,74 @@ class StudentController extends Controller
         return Inertia::render('Students/Index', [
             'students' => $students
         ]);
+    }
+
+    /**
+     * Get the next grade for a given grade string.
+     */
+    private function nextGrade(?string $grade): string
+    {
+        $grades = ['1','2','3','4','5','6','7','8','9','10','11','A/L'];
+        if ($grade === null) return '';
+        $idx = array_search($grade, $grades, true);
+        if ($idx === false) return $grade;
+        if ($grade === 'A/L') return 'A/L';
+        return $grades[$idx + 1] ?? $grade;
+    }
+
+    /**
+     * Transform a class string when promoting from old grade to new grade.
+     */
+    private function transformClass(string $currentClass, ?string $oldGrade, ?string $newGrade): string
+    {
+        if ($oldGrade === 'A/L' || $newGrade === 'A/L') {
+            return $currentClass;
+        }
+        if (preg_match('/^\s*(\d{1,2})(.*)$/u', $currentClass, $m)) {
+            $num = (int)$m[1];
+            if ($num >= 1 && $num <= 10) {
+                $num = $num + 1;
+                return $num . $m[2];
+            }
+        }
+        return $currentClass;
+    }
+
+    /**
+     * Show the upgrade form.
+     */
+    public function showUpgradeForm()
+    {
+        return Inertia::render('Students/Upgrade');
+    }
+
+    /**
+     * Perform academic year upgrade: increment current_grade for all active students.
+     */
+    public function upgrade(Request $request)
+    {
+        $validated = $request->validate([
+            'academic_year' => 'required|digits:4',
+        ]);
+
+        DB::transaction(function () {
+            $chunkSize = 500;
+            Student::where('is_active', true)->chunkById($chunkSize, function ($students) {
+                foreach ($students as $student) {
+                    $oldGrade = $student->current_grade;
+                    $newGrade = $this->nextGrade($oldGrade);
+                    $student->current_grade = $newGrade;
+
+                    if (!empty($student->current_class)) {
+                        $student->current_class = $this->transformClass($student->current_class, $oldGrade, $newGrade);
+                    }
+
+                    $student->save();
+                }
+            });
+        });
+
+        return redirect()->route('students.index')->with('success', 'Students upgraded for academic year ' . $validated['academic_year']);
     }
 
     /**

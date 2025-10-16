@@ -128,7 +128,7 @@ class PaymentController extends Controller
             ->limit(10)
             ->get(['id', 'admission_number', 'name', 'current_grade', 'current_class']);
 
-        return response()->json($students);
+        return response()->json($results);
     }
 
     /**

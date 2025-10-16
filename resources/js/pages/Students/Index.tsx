@@ -225,11 +225,13 @@ export default function Index({ students: originalStudents }: { students: Studen
           </table>
         </div>
 
-        {/* Floating Add Button */}
-        <div className="fixed right-4 bottom-4">
+        {/* Floating Action Buttons */}
+        <div className="fixed right-4 bottom-4 flex flex-col gap-3">
+
           <Link
             href={route('students.create')}
             className="flex items-center justify-center rounded-full bg-blue-600 p-4 text-white shadow-lg hover:bg-blue-700"
+            title="Add Student"
           >
             <CgAddR className="text-3xl" />
           </Link>
