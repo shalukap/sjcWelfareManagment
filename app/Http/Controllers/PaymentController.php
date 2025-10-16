@@ -45,7 +45,7 @@ class PaymentController extends Controller
                 'fee_assignment_id' => $payment->fee_assignment_id,
                 'receipt_number' => $payment->receipt_number,
                 'payment_date' => $payment->payment_date,
-        'deposit_date' => $payment->deposit_date,
+                'deposit_date' => $payment->deposit_date,
                 'amount_paid' => $payment->amount_paid,
                 'payment_method' => $payment->payment_method,
                 'reference_number' => $payment->reference_number,
@@ -400,8 +400,8 @@ class PaymentController extends Controller
         $template= view('reports.recipt', compact('payments','lastpayment'))->render();
 
 
-        //$pdf=Browsershot::html($template)->format('A5')->margins(50, 10, 5, 10)->paperSize(9.5, 5.5,'in')->landscape()->pdf();
-        $pdf=Browsershot::html($template)->setChromePath('/usr/bin/google-chrome')->noSandbox()->format('A5')->margins(50, 10, 5, 10)->paperSize(9.5, 5.5,'in')->landscape()->pdf();
+        $pdf=Browsershot::html($template)->format('A5')->margins(50, 10, 5, 10)->paperSize(9.5, 5.5,'in')->landscape()->pdf();
+        //$pdf=Browsershot::html($template)->setChromePath('/usr/bin/google-chrome')->noSandbox()->format('A5')->margins(50, 10, 5, 10)->paperSize(9.5, 5.5,'in')->landscape()->pdf();
        
 
 

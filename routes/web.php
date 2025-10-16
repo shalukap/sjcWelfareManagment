@@ -8,6 +8,8 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\CollectionReportController;
 use App\Http\Controllers\DueReportsController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\BackupController;
+use App\Http\Controllers\CsvImportController;
 
 
 Route::get('/', function () {
@@ -32,6 +34,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('generate-duereport', [DueReportsController::class, 'generateDueReport'])->name('generateDueReport');
     Route::get('generate-recipt',[PaymentController::class,'generatePDF'])->name('generate-recipt');
     Route::get('generate-collection',[CollectionReportController::class,'generatecollectionreport'])->name('generatecollectionreport');
+    Route::get('/backup-database', [BackupController::class, 'backup']);
+    Route::get('/upload-csv', [CsvImportController::class, 'index'])->name('uploadCsv.index');;
+    Route::post('/upload-csv', [CsvImportController::class, 'upload'])->name('uploadCsv.upload'); 
     Route::prefix('fee-assignments')->group(function () {
 
         Route::get('/create-grade', [FeeAssignmentController::class, 'createGrade'])->name('fee-assignments.create-grade');

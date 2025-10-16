@@ -42,15 +42,23 @@ const mainNavItems: NavItem[] = [
         icon: NotebookText,
        
     },
+    {
+        title: 'Upload bulk students',
+        href: '/upload-csv',
+        icon: NotebookText,
+       
+    },
 ];
 
 const footerNavItems: NavItem[] = [
-    /*
+    
     {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: Folder,
+        title: 'Backup Database',
+        href: '/backup-database',
+        icon: NotebookText,
+       
     },
+    /*
     {
         title: 'Documentation',
         href: 'https://laravel.com/docs/starter-kits#react',
